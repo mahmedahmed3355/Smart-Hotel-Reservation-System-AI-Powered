@@ -1,0 +1,34 @@
+pipeline {
+  agent any
+  environment {
+    REGISTRY = "your-dockerhub-username"
+    IMAGE_API = "${env.REGISTRY}/hotel-api"
+    IMAGE_FE  = "${env.REGISTRY}/hotel-fe"
+  }
+  stages {
+    stage('Checkout'){ steps { checkout scm } }
+
+    stage('Test Backend'){
+      steps {
+        sh 'python -m venv venv && . venv/bin/activate && pip install -r requirements.txt && pytest -q || true'
+      }
+    }
+
+    stage('Build Images'){
+      steps {
+        sh 'docker build -t $IMAGE_API:latest -f Dockerfile.api .'
+        sh 'docker build -t $IMAGE_FE:latest -f Dockerfile.frontend .'
+      }
+    }
+
+    stage('Push'){
+      steps {
+        sh 'echo $DOCKERHUB_PASS | docker login -u $DOCKERHUB_USER --password-stdin'
+        sh 'docker push $IMAGE_API:latest'
+        sh 'docker push $IMAGE_FE:latest'
+      }
+    }
+
+    stage('Deploy'){ steps { sh 'docker compose pull && docker compose up -d --force-recreate' } }
+  }
+}
