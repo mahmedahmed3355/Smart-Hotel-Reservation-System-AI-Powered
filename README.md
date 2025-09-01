@@ -1,5 +1,6 @@
-🏨 Smart Hotel Reservation System – AI Powered
-📌 Overview
+# 🏨 Smart Hotel Reservation System – AI Powered
+
+## 📌 Overview
 
 The Smart Hotel Reservation System is an end-to-end AI-driven booking platform that combines:
 
@@ -34,7 +35,7 @@ Predicts whether a booking is fraudulent or valid
 
 Models: LightGBM + Random Forest with feature engineering
 
-AI Agent System
+## AI Agent System
 
 Email Agent → Sends verification & confirmation emails to users
 
@@ -42,7 +43,7 @@ Fraud Detection Agent → Flags suspicious users
 
 Chatbot Agent → Recommends offers & deals to VIP customers
 
-🔹 Frontend (React + Tailwind)
+## 🔹 Frontend (React + Tailwind)
 
 Booking form with data entry + document upload
 
@@ -50,7 +51,7 @@ Real-time feedback on booking validation
 
 Interactive dashboard for booking status and recommendations
 
-🔹 Automation & Deployment
+## 🔹 Automation & Deployment
 
 Dockerized microservices (Backend, Frontend, Database, OCR Service)
 
@@ -58,7 +59,7 @@ CI/CD with Jenkins for automated testing & deployment
 
 Apache Airflow pipelines for ML model training, retraining, and monitoring
 
-🛠️ Tech Stack
+## 🛠️ Tech Stack
 
 Backend: FastAPI, Python, psycopg2
 
@@ -72,9 +73,10 @@ OCR: Tesseract, Pillow
 
 AI Agents: LangChain / AutoGen (for chatbot & email workflow)
 
-DevOps: Docker, Jenkins, Apache Airflow
+## DevOps: Docker, Jenkins, Apache Airflow
 
 📂 Project Structure
+``` bash
 hotel_booking_pipeline/
 │── backend/
 │ ├── app/
