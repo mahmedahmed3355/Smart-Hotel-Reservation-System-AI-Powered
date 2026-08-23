@@ -1,6 +1,7 @@
 # app/chat_api.py
 from fastapi import APIRouter
 from pydantic import BaseModel
+
 from app.chatbot import reply
 
 router = APIRouter(prefix="/chat", tags=["chat"])

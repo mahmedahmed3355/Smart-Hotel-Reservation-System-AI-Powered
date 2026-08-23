@@ -1,6 +1,7 @@
 # discounts.py
 import json
 
+
 def calculate_discounts(user_info: dict):
     """
     حسب قواعد العمل نحدد الخصومات

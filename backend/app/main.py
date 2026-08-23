@@ -1,6 +1,7 @@
 # app/main.py
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
 from app.api import router as booking_router
 
 app = FastAPI(title="Smart Hotel Reservation System")

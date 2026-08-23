@@ -1,6 +1,11 @@
 # agents/email_agent.py
-import os, re, email, imaplib, smtplib
+import email
+import imaplib
+import os
+import re
+import smtplib
 from email.message import EmailMessage
+
 import requests
 
 IMAP_HOST = os.getenv("IMAP_HOST","imap.gmail.com")
@@ -15,7 +20,7 @@ def parse_booking_body(body:str)->dict:
     # استخرج حقول بسيطة من ايميل العميل
     # عدّل Regex حسب قالب الميل
     def find(pat, default=None):
-        m = re.search(pat, body, re.I)
+        m = re.search(pat, body, re.IGNORECASE)
         return m.group(1).strip() if m else default
     return {
         "email": find(r"email:\s*(.+)"),
@@ -45,9 +50,9 @@ def process_inbox():
     imap = imaplib.IMAP4_SSL(IMAP_HOST)
     imap.login(IMAP_USER, IMAP_PASS)
     imap.select("INBOX")
-    status, data = imap.search(None, '(UNSEEN SUBJECT "Hotel Booking")')
+    _status, data = imap.search(None, '(UNSEEN SUBJECT "Hotel Booking")')
     for num in data[0].split():
-        status, d = imap.fetch(num, "(RFC822)")
+        _status, d = imap.fetch(num, "(RFC822)")
         msg = email.message_from_bytes(d[0][1])
         from_addr = email.utils.parseaddr(msg.get("From"))[1]
         body = ""

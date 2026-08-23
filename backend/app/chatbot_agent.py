@@ -1,6 +1,7 @@
 # app/chatbot.py
 from app.discounts import compute_discounts
 
+
 def reply(message: str, last_score: float = 0.7, loyalty_points: int = 0) -> str:
     m = message.lower()
     if "offer" in m or "عروض" in m:

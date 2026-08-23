@@ -1,7 +1,9 @@
 # services/ocr.py
 import re
+
 import pytesseract
 from PIL import Image
+
 
 def extract_from_id(image_path: str) -> dict:
     text = pytesseract.image_to_string(Image.open(image_path), lang="eng")

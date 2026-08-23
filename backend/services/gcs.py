@@ -1,6 +1,8 @@
 # services/gcs.py
 import os
+
 from google.cloud import storage
+
 
 def upload_to_gcs(local_path: str, bucket_name: str, dst_path: str) -> str:
     client = storage.Client.from_service_account_json(os.getenv("GOOGLE_APPLICATION_CREDENTIALS"))

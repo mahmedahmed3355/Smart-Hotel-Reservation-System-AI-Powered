@@ -1,13 +1,18 @@
 # app/api.py
-import os, uuid, tempfile, shutil
-from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException
-from sqlalchemy.orm import Session
-from app.database import get_db
-from app.models import Booking
-from services.ocr import extract_from_id
+import os
+import shutil
+import tempfile
+import uuid
+
+from fastapi import APIRouter, Depends, File, Form, UploadFile
 from services.gcs import upload_to_gcs
-from app.inference import predict_score
+from services.ocr import extract_from_id
+from sqlalchemy.orm import Session
+
+from app.database import get_db
 from app.discounts import compute_discounts
+from app.inference import predict_score
+from app.models import Booking
 
 router = APIRouter(prefix="/bookings", tags=["bookings"])
 

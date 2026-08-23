@@ -1,7 +1,8 @@
 # predictor.py
 import pickle
-from config import MODEL_PATH
+
 import pandas as pd
+from config import MODEL_PATH
 
 # تحميل النموذج مرة واحدة
 with open(MODEL_PATH, "rb") as f:
