@@ -23,8 +23,8 @@ GCS_BUCKET = os.getenv("GCS_BUCKET", "your-bucket")
 @router.post("/")
 def create_booking(
     booking_request: Annotated[BookingCreate, Depends(BookingCreate.as_form)],
-    id_image: UploadFile = File(...),
-    db: Session = Depends(get_db),
+    id_image: Annotated[UploadFile, File(...)],
+    db: Annotated[Session, Depends(get_db)],
 ):
     # 1) خزّن الصورة مؤقتاً ثم ارفعها GCS
     tmpdir = tempfile.mkdtemp()
