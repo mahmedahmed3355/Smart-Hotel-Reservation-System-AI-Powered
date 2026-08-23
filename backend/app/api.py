@@ -21,7 +21,7 @@ router = APIRouter(prefix="/bookings", tags=["bookings"])
 GCS_BUCKET = os.getenv("GCS_BUCKET", "your-bucket")
 
 @router.post("/")
-async def create_booking(
+def create_booking(
     booking_request: Annotated[BookingCreate, Depends(BookingCreate.as_form)],
     id_image: UploadFile = File(...),
     db: Session = Depends(get_db),
