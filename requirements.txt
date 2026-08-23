@@ -6,3 +6,6 @@ psycopg2-binary
 fastapi
 uvicorn
 jupyter
+
+alembic
+lightgbm

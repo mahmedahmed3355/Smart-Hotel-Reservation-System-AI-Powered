@@ -1,30 +1,26 @@
-# app/inference.py
-import os, pickle, numpy as np
+from __future__ import annotations
+
+from typing import Any
+
 import pandas as pd
+from ml.artifact import load_artifact
+from ml.preprocessing import prepare_features
 
-MODEL_PATH = os.getenv("MODEL_PATH", "models/best_model.pkl")
 
-with open(MODEL_PATH, "rb") as f:
-    model = pickle.load(f)
+def predict_score(payload: dict[str, Any]) -> float:
+    frame = pd.DataFrame([payload])
+    features = prepare_features(frame)
 
-NUMERIC_COLS = [
-    "no_of_adults","no_of_children", "arrival_year","arrival_month","arrival_date",
-    "avg_price_per_room"
-]
-CAT_COLS = ["market_segment_type","room_type_reserved"]
+    artifact = load_artifact()
+    pipeline = artifact["pipeline"]
 
-def preprocess(payload: dict):
-    df = pd.DataFrame([payload])
-    for c in CAT_COLS:
-        if c in df.columns:
-            df[c] = df[c].astype("category").cat.codes
-        else:
-            df[c] = -1
-    for c in NUMERIC_COLS:
-        df[c] = pd.to_numeric(df.get(c, -1), errors="coerce").fillna(-1)
-    return df[NUMERIC_COLS + CAT_COLS]
+    probability = float(
+        pipeline.predict_proba(features)[:, 1][0]
+    )
 
-def predict_score(payload: dict) -> float:
-    X = preprocess(payload)
-    proba = model.predict_proba(X)[:,1]
-    return float(proba[0])
+    if not 0.0 <= probability <= 1.0:
+        raise ValueError(
+            f"Model returned invalid probability: {probability}"
+        )
+
+    return probability
