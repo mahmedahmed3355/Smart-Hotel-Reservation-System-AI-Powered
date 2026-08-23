@@ -12,5 +12,5 @@ DB_USER = get_env("DB_USER", "hotel_admin")
 DB_PASSWORD = get_env("DB_PASSWORD")
 
 GCS_BUCKET = get_env("GCS_BUCKET")
-MODEL_PATH = get_env("MODEL_PATH", "models/best_model.pkl")
+MODEL_PATH = get_env("MODEL_PATH", "models/smart_hotel_model.pkl")
 DATA_CSV = get_env("DATA_CSV", "data/Hotel Reservations.csv")
