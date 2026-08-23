@@ -1,32 +1,45 @@
+from pathlib import Path
+
 import pandas as pd
 from sqlalchemy import create_engine
 
-# 1. إعداد الاتصال بقاعدة البيانات
-# عدّل القيم حسب إعداداتك (user, password, host, dbname)
-DB_HOST = "localhost"
-DB_PORT = "5432"
-DB_NAME = "hotel_booking_db"
-DB_USER = "hotel_admin"
-DB_PASSWORD = "P@$$w0rd"
-
-DATABASE_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
-
-# 2. إنشاء engine
-engine = create_engine(DATABASE_URL)
-
-# 3. قراءة CSV باستخدام pandas
-csv_file = "/home/mohamed/Desktop/Smart Hotl reservation System/hotel_booking_pipeline/data/Hotel Reservations.csv"  # غيّر المسار حسب مكان الملف
-df = pd.read_csv(csv_file)
-
-# ✅ معالجة بسيطة لو في NaN
-df = df.where(pd.notnull(df), None)
-
-# 4. إدخال البيانات في جدول hotel_bookings
-df.to_sql(
-    "Hotel Reservations", 
-    engine, 
-    if_exists="append",   # append علشان نضيف من غير ما نمسح الجدول
-    index=False
+from config.settings import (
+    DATA_CSV,
+    DB_HOST,
+    DB_NAME,
+    DB_PASSWORD,
+    DB_PORT,
+    DB_USER,
 )
 
-print("✅ Data inserted successfully into hotel_bookings table!")
+if not DB_PASSWORD:
+    raise RuntimeError(
+        "DB_PASSWORD is required. "
+        "Set it in the environment before loading data."
+    )
+
+DATABASE_URL = (
+    f"postgresql://{DB_USER}:{DB_PASSWORD}"
+    f"@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+)
+
+engine = create_engine(DATABASE_URL)
+
+csv_path = Path(DATA_CSV)
+
+if not csv_path.exists():
+    raise FileNotFoundError(
+        f"Reservation dataset not found: {csv_path}"
+    )
+
+df = pd.read_csv(csv_path)
+df = df.where(pd.notnull(df), None)
+
+df.to_sql(
+    "hotel_reservations",
+    engine,
+    if_exists="append",
+    index=False,
+)
+
+print(f"Inserted {len(df)} rows into hotel_reservations")

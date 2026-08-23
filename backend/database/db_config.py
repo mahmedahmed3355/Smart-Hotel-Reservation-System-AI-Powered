@@ -1,22 +1,22 @@
-DB_CONFIG = {
-    "host": "localhost",
-    "port": 5432,
-    "user": "hotel_admin",
-    "password": "P@$$w0rd",
-    "dbname": "hotel_booking_db"
-}
-
 from sqlalchemy import create_engine
 
-# إعدادات قاعدة البيانات (غير القيم دي حسب بيئتك)
-DB_USER = "hotel_admin"
-DB_PASSWORD = "P@$$w0rd"
-DB_HOST = "localhost"
-DB_PORT = "5432"
-DB_NAME = "hotel_db"
+from config.settings import (
+    DB_HOST,
+    DB_NAME,
+    DB_PASSWORD,
+    DB_PORT,
+    DB_USER,
+)
 
-# PostgreSQL connection URL
-DATABASE_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+if not DB_PASSWORD:
+    raise RuntimeError(
+        "DB_PASSWORD is required. "
+        "Set it in the environment before starting the application."
+    )
 
-# SQLAlchemy Engine
+DATABASE_URL = (
+    f"postgresql://{DB_USER}:{DB_PASSWORD}"
+    f"@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+)
+
 engine = create_engine(DATABASE_URL)
