@@ -97,6 +97,9 @@ jobs:
             exit 1
           fi
 
+      - name: Dependency vulnerability audit
+        run: python -m pip_audit -r requirements.txt
+
       - name: Check forbidden artifacts
         shell: bash
         run: |
