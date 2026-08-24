@@ -1,3 +1,5 @@
+from unittest.mock import MagicMock
+
 import pytest
 from sqlalchemy.dialects.postgresql import JSONB
 
@@ -61,3 +63,24 @@ def test_booking_metadata_matches_persistence_contract():
     assert table.c.is_verified.nullable is False
     assert table.c.is_verified.server_default is not None
     assert isinstance(table.c.discounts.type, JSONB)
+
+
+def test_get_db_yields_and_closes_session(monkeypatch):
+    session = MagicMock()
+
+    monkeypatch.setattr(database, "DB_PASSWORD", "secret")
+    monkeypatch.setattr(
+        database,
+        "SessionLocal",
+        MagicMock(return_value=session),
+    )
+
+    generator = database.get_db()
+
+    assert next(generator) is session
+
+    with pytest.raises(StopIteration):
+        next(generator)
+
+    database.SessionLocal.assert_called_once_with()
+    session.close.assert_called_once_with()
