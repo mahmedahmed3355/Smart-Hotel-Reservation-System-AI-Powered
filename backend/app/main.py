@@ -26,3 +26,8 @@ app.include_router(booking_router)
 @app.get("/")
 def root():
     return {"status": "ok", "docs": "/docs"}
+
+
+@app.get("/health")
+def health():
+    return {"status": "healthy"}
