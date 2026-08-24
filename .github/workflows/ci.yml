@@ -39,6 +39,7 @@ jobs:
 
       - name: Verify dependency consistency
         run: |
+          python scripts/check_dependency_metadata.py
           python -m pip check
           python -m piptools compile --dry-run requirements.in
           python -m piptools compile --dry-run requirements-dev.in

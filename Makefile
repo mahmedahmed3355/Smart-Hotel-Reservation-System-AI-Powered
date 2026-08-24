@@ -14,6 +14,7 @@ install-dev:
 	$(PYTHON) -m piptools sync requirements.txt requirements-dev.txt
 
 check:
+	$(PYTHON) scripts/check_dependency_metadata.py
 	$(PYTHON) -m pip check
 	$(PYTHON) -m piptools compile --dry-run requirements.in
 	$(PYTHON) -m piptools compile --dry-run requirements-dev.in
