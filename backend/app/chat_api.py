@@ -2,7 +2,7 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
 
-from app.chatbot import reply
+from app.chatbot_agent import reply
 
 router = APIRouter(prefix="/chat", tags=["chat"])
 

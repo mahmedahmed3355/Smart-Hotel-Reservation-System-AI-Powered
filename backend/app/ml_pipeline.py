@@ -3,7 +3,7 @@ import pickle
 
 import pandas as pd
 
-from config import MODEL_PATH
+from config.settings import MODEL_PATH
 
 # تحميل النموذج مرة واحدة
 with open(MODEL_PATH, "rb") as f:
