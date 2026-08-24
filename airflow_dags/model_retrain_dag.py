@@ -19,7 +19,7 @@ with DAG(
 
     run_email_agent = BashOperator(
         task_id="run_email_agent",
-        bash_command="cd /opt/airflow/repo && . venv/bin/activate && python agents/email_agent.py"
+        bash_command=("cd /opt/airflow/repo && . venv/bin/activate && " "PYTHONPATH=backend python -m agents.email_agent")
     )
 
     retrain >> run_email_agent
