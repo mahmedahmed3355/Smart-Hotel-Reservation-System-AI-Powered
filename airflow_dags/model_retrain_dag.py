@@ -14,7 +14,7 @@ with DAG(
 
     retrain = BashOperator(
         task_id="retrain_models",
-        bash_command="cd /opt/airflow/repo && . venv/bin/activate && python ml/train_models.py"
+        bash_command=("cd /opt/airflow/repo && . venv/bin/activate && " "PYTHONPATH=backend python -m ml " "--dataset \"${DATA_CSV:-data/Hotel Reservations.csv}\" " "--output \"${MODEL_PATH:-models/smart_hotel_model.pkl}\"")
     )
 
     run_email_agent = BashOperator(
