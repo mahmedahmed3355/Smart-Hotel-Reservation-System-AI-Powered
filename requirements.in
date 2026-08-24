@@ -10,3 +10,4 @@ lightgbm
 google-cloud-storage
 Pillow
 python-multipart
+pytesseract

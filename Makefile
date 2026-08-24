@@ -6,12 +6,12 @@ COMPOSE ?= docker compose --env-file .env.example
 install:
 	$(PYTHON) -m pip install --upgrade pip
 	$(PYTHON) -m pip install pip-tools==7.6.1
-	$(PYTHON) -m pip sync requirements.txt
+	$(PYTHON) -m piptools sync requirements.txt
 
 install-dev:
 	$(PYTHON) -m pip install --upgrade pip
 	$(PYTHON) -m pip install pip-tools==7.6.1
-	$(PYTHON) -m pip sync requirements.txt requirements-dev.txt
+	$(PYTHON) -m piptools sync requirements.txt requirements-dev.txt
 
 check:
 	$(PYTHON) -m pip check

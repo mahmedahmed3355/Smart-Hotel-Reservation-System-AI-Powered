@@ -197,6 +197,7 @@ notebook-shim==0.2.4
     #   notebook
 packaging==26.3
     # via
+    #   -c requirements.txt
     #   ipykernel
     #   jupyter-events
     #   jupyter-server

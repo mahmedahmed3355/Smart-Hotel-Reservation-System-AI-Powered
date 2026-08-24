@@ -43,7 +43,7 @@ Install the locked dependencies:
 ~~~bash
 python -m pip install --upgrade pip
 python -m pip install pip-tools==7.6.1
-python -m pip sync requirements.txt requirements-dev.txt
+python -m piptools sync requirements.txt requirements-dev.txt
 ~~~
 
 Verify the installed environment:
