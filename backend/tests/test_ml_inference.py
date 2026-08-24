@@ -40,7 +40,9 @@ def test_predict_score_rejects_missing_features():
 
 
 def test_real_dataset_row_matches_feature_contract():
-    frame = pd.read_csv("data/Hotel Reservations.csv")
+    frame = pd.read_csv(
+        "backend/tests/fixtures/hotel_reservations_sample.csv"
+    )
     row = frame.iloc[0].drop(
         labels=["Booking_ID", "booking_status"]
     ).to_dict()
