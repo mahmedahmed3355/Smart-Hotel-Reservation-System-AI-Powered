@@ -1,39 +1,78 @@
-# agents/email_agent.py
 import email
 import imaplib
+import logging
 import os
 import re
 import smtplib
 from email.message import EmailMessage
 
 import requests
+from app.schemas import BookingCreate
+from pydantic import ValidationError
 
-IMAP_HOST = os.getenv("IMAP_HOST","imap.gmail.com")
+logger = logging.getLogger(__name__)
+
+IMAP_HOST = os.getenv("IMAP_HOST", "imap.gmail.com")
 IMAP_USER = os.getenv("IMAP_USER")
 IMAP_PASS = os.getenv("IMAP_PASS")
-SMTP_HOST = os.getenv("SMTP_HOST","smtp.gmail.com")
-SMTP_PORT = int(os.getenv("SMTP_PORT","587"))
-API_URL  = os.getenv("API_URL","http://api:8000/bookings/")
-# ملاحظة: استخدم App Password مع Gmail
+SMTP_HOST = os.getenv("SMTP_HOST", "smtp.gmail.com")
+SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
+API_URL = os.getenv("API_URL", "http://api:8000/bookings/")
 
-def parse_booking_body(body:str)->dict:
-    # استخرج حقول بسيطة من ايميل العميل
-    # عدّل Regex حسب قالب الميل
-    def find(pat, default=None):
-        m = re.search(pat, body, re.IGNORECASE)
-        return m.group(1).strip() if m else default
+
+def parse_booking_body(body: str) -> dict:
+    def find(pattern: str, default: str | None = None) -> str | None:
+        match = re.search(pattern, body, re.IGNORECASE)
+        return match.group(1).strip() if match else default
+
     return {
         "email": find(r"email:\s*(.+)"),
-        "full_name": find(r"name:\s*(.+)",""),
-        "no_of_adults": int(find(r"adults:\s*(\d+)","1")),
-        "no_of_children": int(find(r"children:\s*(\d+)","0")),
-        "arrival_year": int(find(r"year:\s*(\d+)","2025")),
-        "arrival_month": int(find(r"month:\s*(\d+)","1")),
-        "arrival_date": int(find(r"date:\s*(\d+)","1")),
-        "avg_price_per_room": float(find(r"price:\s*([\d.]+)","100")),
-        "market_segment_type": find(r"segment:\s*(.+)","Online"),
-        "room_type_reserved": find(r"room:\s*(.+)","Room_Type 1"),
+        "full_name": find(r"name:\s*(.+)", ""),
+        "no_of_adults": int(find(r"adults:\s*(\d+)", "1")),
+        "no_of_children": int(find(r"children:\s*(\d+)", "0")),
+        "no_of_weekend_nights": int(
+            find(r"weekend_nights:\s*(\d+)", "0")
+        ),
+        "no_of_week_nights": int(find(r"week_nights:\s*(\d+)", "0")),
+        "required_car_parking_space": int(
+            find(r"parking:\s*(\d+)", "0")
+        ),
+        "lead_time": int(find(r"lead_time:\s*(\d+)", "0")),
+        "arrival_year": int(find(r"year:\s*(\d+)", "2025")),
+        "arrival_month": int(find(r"month:\s*(\d+)", "1")),
+        "arrival_date": int(find(r"date:\s*(\d+)", "1")),
+        "repeated_guest": int(find(r"repeated_guest:\s*(\d+)", "0")),
+        "no_of_previous_cancellations": int(
+            find(r"previous_cancellations:\s*(\d+)", "0")
+        ),
+        "no_of_previous_bookings_not_canceled": int(
+            find(r"previous_bookings_not_canceled:\s*(\d+)", "0")
+        ),
+        "avg_price_per_room": float(
+            find(r"price:\s*([\d.]+)", "100")
+        ),
+        "no_of_special_requests": int(
+            find(r"special_requests:\s*(\d+)", "0")
+        ),
+        "type_of_meal_plan": find(
+            r"meal_plan:\s*(.+)",
+            "Meal Plan 1",
+        ),
+        "market_segment_type": find(
+            r"segment:\s*(.+)",
+            "Online",
+        ),
+        "room_type_reserved": find(
+            r"room:\s*(.+)",
+            "Room_Type 1",
+        ),
     }
+
+
+def validate_booking_payload(payload: dict) -> dict:
+    booking = BookingCreate.model_validate(payload)
+    return booking.model_dump()
+
 
 def send_email(to_addr, subject, body):
     msg = EmailMessage()
@@ -41,43 +80,92 @@ def send_email(to_addr, subject, body):
     msg["To"] = to_addr
     msg["Subject"] = subject
     msg.set_content(body)
-    with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as s:
-        s.starttls()
-        s.login(IMAP_USER, IMAP_PASS)
-        s.send_message(msg)
+
+    with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as smtp:
+        smtp.starttls()
+        smtp.login(IMAP_USER, IMAP_PASS)
+        smtp.send_message(msg)
+
 
 def process_inbox():
     imap = imaplib.IMAP4_SSL(IMAP_HOST)
     imap.login(IMAP_USER, IMAP_PASS)
     imap.select("INBOX")
-    _status, data = imap.search(None, '(UNSEEN SUBJECT "Hotel Booking")')
+
+    _status, data = imap.search(
+        None,
+        '(UNSEEN SUBJECT "Hotel Booking")',
+    )
+
     for num in data[0].split():
-        _status, d = imap.fetch(num, "(RFC822)")
-        msg = email.message_from_bytes(d[0][1])
+        _status, message_data = imap.fetch(num, "(RFC822)")
+        msg = email.message_from_bytes(message_data[0][1])
         from_addr = email.utils.parseaddr(msg.get("From"))[1]
+
         body = ""
+
         if msg.is_multipart():
             for part in msg.walk():
-                if part.get_content_type()=="text/plain":
-                    body += part.get_payload(decode=True).decode(errors="ignore")
+                if part.get_content_type() == "text/plain":
+                    body += part.get_payload(
+                        decode=True
+                    ).decode(errors="ignore")
         else:
-            body = msg.get_payload(decode=True).decode(errors="ignore")
+            body = msg.get_payload(
+                decode=True
+            ).decode(errors="ignore")
 
-        payload = parse_booking_body(body)
+        try:
+            payload = validate_booking_payload(
+                parse_booking_body(body)
+            )
+        except ValidationError:
+            logger.warning(
+                "Skipping invalid booking email from %s",
+                from_addr,
+                exc_info=True,
+            )
+            continue
 
-        # ممكن برضه نحمّل صورة مرفقة ونبعتها مع الطلب كـ multipart لو عايز تعمّق
-        files = {}  # {"id_image": open("path/to/file","rb")} لو عندك مرفق
+        files = {}
 
-        r = requests.post(API_URL, data=payload, files=files, timeout=30)
-        res = r.json()
-        if res.get("accepted"):
-            send_email(from_addr, "Booking Confirmed ✅",
-                       f"تم تأكيد الحجز. سكورك: {res['score']:.2f}. عروضك: {res['offers']}")
+        try:
+            response = requests.post(
+                API_URL,
+                data=payload,
+                files=files,
+                timeout=30,
+            )
+            response.raise_for_status()
+            result = response.json()
+        except requests.RequestException:
+            logger.exception(
+                "Booking API request failed for %s",
+                from_addr,
+            )
+            continue
+
+        if result.get("accepted"):
+            send_email(
+                from_addr,
+                "Booking Confirmed",
+                (
+                    "تم تأكيد الحجز. "
+                    f"سكورك: {result['score']:.2f}. "
+                    f"عروضك: {result['offers']}"
+                ),
+            )
         else:
-            send_email(from_addr, "No Availability ❌",
-                       "للأسف لا يوجد مكان مناسب حالياً، جرّب تواريخ أخرى.")
+            send_email(
+                from_addr,
+                "No Availability",
+                "للأسف لا يوجد مكان مناسب حالياً، "
+                "جرّب تواريخ أخرى.",
+            )
+
     imap.close()
     imap.logout()
 
-if __name__=="__main__":
+
+if __name__ == "__main__":
     process_inbox()
