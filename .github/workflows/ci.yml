@@ -65,7 +65,10 @@ jobs:
             -q
 
       - name: Docker Compose validation
+        shell: bash
         run: |
+          cp .env.example .env
+          trap 'rm -f .env' EXIT
           docker compose --env-file .env.example config --quiet
 
       - name: Build API image
