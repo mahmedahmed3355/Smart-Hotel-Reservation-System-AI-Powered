@@ -1,6 +1,7 @@
+from datetime import datetime, timedelta
+
 from airflow import DAG
 from airflow.operators.bash import BashOperator
-from datetime import datetime, timedelta
 
 default_args = {"owner":"hotel", "retries":1, "retry_delay": timedelta(minutes=5)}
 
@@ -14,12 +15,20 @@ with DAG(
 
     retrain = BashOperator(
         task_id="retrain_models",
-        bash_command=("cd /opt/airflow/repo && . venv/bin/activate && " "PYTHONPATH=backend python -m ml " "--dataset \"${DATA_CSV:-data/Hotel Reservations.csv}\" " "--output \"${MODEL_PATH:-models/smart_hotel_model.pkl}\"")
+        bash_command=(
+            "cd /opt/airflow/repo && . venv/bin/activate && "
+            "PYTHONPATH=backend python -m ml "
+            "--dataset \"${DATA_CSV:-data/Hotel Reservations.csv}\" "
+            "--output \"${MODEL_PATH:-models/smart_hotel_model.pkl}\""
+        )
     )
 
     run_email_agent = BashOperator(
         task_id="run_email_agent",
-        bash_command=("cd /opt/airflow/repo && . venv/bin/activate && " "PYTHONPATH=backend python -m agents.email_agent")
+        bash_command=(
+            "cd /opt/airflow/repo && . venv/bin/activate && "
+            "PYTHONPATH=backend python -m agents.email_agent"
+        )
     )
 
     retrain >> run_email_agent
