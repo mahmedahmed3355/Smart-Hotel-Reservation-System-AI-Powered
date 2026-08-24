@@ -122,7 +122,8 @@ def process_inbox() -> None:
             continue
 
         msg = email.message_from_bytes(raw_message[1])
-        from_addr = email.utils.parseaddr(msg.get("From"))[1]
+        from_header = msg.get("From") or ""
+        from_addr = email.utils.parseaddr(from_header)[1]
 
         body = ""
 
