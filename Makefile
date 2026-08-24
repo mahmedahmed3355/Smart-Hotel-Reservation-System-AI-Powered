@@ -26,8 +26,10 @@ test:
 
 coverage:
 	pytest backend/tests \
+		--cov=app \
+		--cov=agents \
+		--cov=services \
 		--cov=ml \
-		--cov=app.inference \
 		--cov-report=term-missing \
 		--cov-fail-under=85 \
 		-q

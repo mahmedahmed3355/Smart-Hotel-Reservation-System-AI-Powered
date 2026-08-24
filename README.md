@@ -179,8 +179,10 @@ The CI coverage command can also be run locally:
 
 ~~~bash
 pytest backend/tests \
+  --cov=app \
+  --cov=agents \
+  --cov=services \
   --cov=ml \
-  --cov=app.inference \
   --cov-report=term-missing \
   --cov-fail-under=85 \
   -q
@@ -302,8 +304,10 @@ python -m pip check
 ruff check backend alembic
 pytest backend/tests -q
 pytest backend/tests \
+  --cov=app \
+  --cov=agents \
+  --cov=services \
   --cov=ml \
-  --cov=app.inference \
   --cov-report=term-missing \
   --cov-fail-under=85 \
   -q
