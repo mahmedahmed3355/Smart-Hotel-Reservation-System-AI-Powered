@@ -25,6 +25,9 @@ class FakeSession:
         self.refresh_calls += 1
         instance.id = 321
 
+    def rollback(self):
+        pass
+
 
 def multipart_data(**overrides):
     data = {
@@ -190,3 +193,54 @@ def test_invalid_booking_does_not_call_external_dependencies(api_client):
     assert session.added == []
     assert session.commit_calls == 0
     assert session.refresh_calls == 0
+
+def test_create_booking_returns_502_when_ocr_fails(api_client):
+    client, session, ocr, upload, predict = api_client
+    ocr.side_effect = RuntimeError("ocr unavailable")
+
+    response = post_booking(client, multipart_data())
+
+    assert response.status_code == 502
+    assert response.json()["detail"] == (
+        "Unable to process identification image."
+    )
+    upload.assert_not_called()
+    predict.assert_not_called()
+    assert session.added == []
+    assert session.commit_calls == 0
+
+
+def test_create_booking_returns_502_when_upload_fails(api_client):
+    client, session, _ocr, upload, predict = api_client
+    upload.side_effect = RuntimeError("storage unavailable")
+
+    response = post_booking(client, multipart_data())
+
+    assert response.status_code == 502
+    assert response.json()["detail"] == (
+        "Unable to store identification image."
+    )
+    predict.assert_not_called()
+    assert session.added == []
+    assert session.commit_calls == 0
+
+
+def test_create_booking_rolls_back_when_database_commit_fails(
+    api_client,
+):
+    client, session, _ocr, _upload, _predict = api_client
+    rollback = Mock()
+    session.rollback = rollback
+
+    def fail_commit():
+        session.commit_calls += 1
+        raise RuntimeError("database unavailable")
+
+    session.commit = fail_commit
+
+    response = post_booking(client, multipart_data())
+
+    assert response.status_code == 500
+    assert response.json()["detail"] == "Unable to save booking."
+    rollback.assert_called_once()
+    assert len(session.added) == 1
