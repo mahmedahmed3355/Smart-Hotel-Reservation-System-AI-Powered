@@ -8,7 +8,27 @@ version = "0.1.0"
 description = "AI-powered hotel reservation system with FastAPI, ML, OCR, and containerized deployment."
 readme = "README.md"
 requires-python = ">=3.12"
-license = { text = "MIT" }
+license = "MIT"
+
+[tool.setuptools]
+package-dir = {"" = "backend"}
+
+[tool.setuptools.packages.find]
+where = ["backend"]
+include = [
+    "app*",
+    "agents*",
+    "config*",
+    "database*",
+    "etl*",
+    "ml*",
+    "models*",
+    "services*",
+]
+exclude = [
+    "tests*",
+    "scripts*",
+]
 
 [tool.ruff]
 target-version = "py312"
