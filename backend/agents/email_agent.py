@@ -5,6 +5,7 @@ import os
 import re
 import smtplib
 from email.message import EmailMessage
+from typing import Any, cast, overload
 
 import requests
 from pydantic import ValidationError
@@ -21,8 +22,17 @@ SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
 API_URL = os.getenv("API_URL", "http://api:8000/bookings/")
 
 
-def parse_booking_body(body: str) -> dict:
-    def find(pattern: str, default: str | None = None) -> str | None:
+def parse_booking_body(body: str) -> dict[str, Any]:
+    @overload
+    def find(pattern: str) -> str | None: ...
+
+    @overload
+    def find(pattern: str, default: str) -> str: ...
+
+    def find(
+        pattern: str,
+        default: str | None = None,
+    ) -> str | None:
         match = re.search(pattern, body, re.IGNORECASE)
         return match.group(1).strip() if match else default
 
@@ -31,30 +41,18 @@ def parse_booking_body(body: str) -> dict:
         "full_name": find(r"name:\s*(.+)", ""),
         "no_of_adults": int(find(r"adults:\s*(\d+)", "1")),
         "no_of_children": int(find(r"children:\s*(\d+)", "0")),
-        "no_of_weekend_nights": int(
-            find(r"weekend_nights:\s*(\d+)", "0")
-        ),
+        "no_of_weekend_nights": int(find(r"weekend_nights:\s*(\d+)", "0")),
         "no_of_week_nights": int(find(r"week_nights:\s*(\d+)", "0")),
-        "required_car_parking_space": int(
-            find(r"parking:\s*(\d+)", "0")
-        ),
+        "required_car_parking_space": int(find(r"parking:\s*(\d+)", "0")),
         "lead_time": int(find(r"lead_time:\s*(\d+)", "0")),
         "arrival_year": int(find(r"year:\s*(\d+)", "2025")),
         "arrival_month": int(find(r"month:\s*(\d+)", "1")),
         "arrival_date": int(find(r"date:\s*(\d+)", "1")),
         "repeated_guest": int(find(r"repeated_guest:\s*(\d+)", "0")),
-        "no_of_previous_cancellations": int(
-            find(r"previous_cancellations:\s*(\d+)", "0")
-        ),
-        "no_of_previous_bookings_not_canceled": int(
-            find(r"previous_bookings_not_canceled:\s*(\d+)", "0")
-        ),
-        "avg_price_per_room": float(
-            find(r"price:\s*([\d.]+)", "100")
-        ),
-        "no_of_special_requests": int(
-            find(r"special_requests:\s*(\d+)", "0")
-        ),
+        "no_of_previous_cancellations": int(find(r"previous_cancellations:\s*(\d+)", "0")),
+        "no_of_previous_bookings_not_canceled": int(find(r"previous_bookings_not_canceled:\s*(\d+)", "0")),
+        "avg_price_per_room": float(find(r"price:\s*([\d.]+)", "100")),
+        "no_of_special_requests": int(find(r"special_requests:\s*(\d+)", "0")),
         "type_of_meal_plan": find(
             r"meal_plan:\s*(.+)",
             "Meal Plan 1",
@@ -70,12 +68,21 @@ def parse_booking_body(body: str) -> dict:
     }
 
 
-def validate_booking_payload(payload: dict) -> dict:
+def validate_booking_payload(
+    payload: dict[str, Any],
+) -> dict[str, Any]:
     booking = BookingCreate.model_validate(payload)
     return booking.model_dump()
 
 
-def send_email(to_addr, subject, body):
+def send_email(
+    to_addr: str,
+    subject: str,
+    body: str,
+) -> None:
+    if IMAP_USER is None or IMAP_PASS is None:
+        raise RuntimeError("IMAP_USER and IMAP_PASS must be configured")
+
     msg = EmailMessage()
     msg["From"] = IMAP_USER
     msg["To"] = to_addr
@@ -88,9 +95,12 @@ def send_email(to_addr, subject, body):
         smtp.send_message(msg)
 
 
-def process_inbox():
+def process_inbox() -> None:
     imap = imaplib.IMAP4_SSL(IMAP_HOST)
-    imap.login(IMAP_USER, IMAP_PASS)
+    imap.login(
+        cast(str, IMAP_USER),
+        cast(str, IMAP_PASS),
+    )
     imap.select("INBOX")
 
     _status, data = imap.search(
@@ -100,7 +110,18 @@ def process_inbox():
 
     for num in data[0].split():
         _status, message_data = imap.fetch(num, "(RFC822)")
-        msg = email.message_from_bytes(message_data[0][1])
+
+        if not message_data:
+            logger.warning("Skipping email with no message data")
+            continue
+
+        raw_message = message_data[0]
+
+        if not isinstance(raw_message, tuple) or len(raw_message) < 2 or not isinstance(raw_message[1], bytes):
+            logger.warning("Skipping email with invalid message data")
+            continue
+
+        msg = email.message_from_bytes(raw_message[1])
         from_addr = email.utils.parseaddr(msg.get("From"))[1]
 
         body = ""
@@ -108,18 +129,21 @@ def process_inbox():
         if msg.is_multipart():
             for part in msg.walk():
                 if part.get_content_type() == "text/plain":
-                    body += part.get_payload(
-                        decode=True
-                    ).decode(errors="ignore")
+                    payload_bytes = part.get_payload(decode=True)
+
+                    if isinstance(
+                        payload_bytes,
+                        bytes,
+                    ):
+                        body += payload_bytes.decode(errors="ignore")
         else:
-            body = msg.get_payload(
-                decode=True
-            ).decode(errors="ignore")
+            payload_bytes = msg.get_payload(decode=True)
+
+            if isinstance(payload_bytes, bytes):
+                body = payload_bytes.decode(errors="ignore")
 
         try:
-            payload = validate_booking_payload(
-                parse_booking_body(body)
-            )
+            payload = validate_booking_payload(parse_booking_body(body))
         except ValidationError:
             logger.warning(
                 "Skipping invalid booking email from %s",
@@ -128,7 +152,7 @@ def process_inbox():
             )
             continue
 
-        files = {}
+        files: dict[str, Any] = {}
 
         try:
             response = requests.post(
@@ -150,18 +174,13 @@ def process_inbox():
             send_email(
                 from_addr,
                 "Booking Confirmed",
-                (
-                    "تم تأكيد الحجز. "
-                    f"سكورك: {result['score']:.2f}. "
-                    f"عروضك: {result['offers']}"
-                ),
+                (f"تم تأكيد الحجز. سكورك: {result['score']:.2f}. عروضك: {result['offers']}"),
             )
         else:
             send_email(
                 from_addr,
                 "No Availability",
-                "للأسف لا يوجد مكان مناسب حالياً، "
-                "جرّب تواريخ أخرى.",
+                "للأسف لا يوجد مكان مناسب حالياً، جرّب تواريخ أخرى.",
             )
 
     imap.close()

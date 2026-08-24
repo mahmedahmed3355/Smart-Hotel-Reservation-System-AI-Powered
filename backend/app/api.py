@@ -29,7 +29,7 @@ def create_booking(
     db: Annotated[Session, Depends(get_db)],
 ):
     tmpdir = tempfile.mkdtemp()
-    local_path = os.path.join(tmpdir, id_image.filename)
+    local_path = os.path.join(tmpdir, id_image.filename or "upload")
 
     try:
         with open(local_path, "wb") as f:

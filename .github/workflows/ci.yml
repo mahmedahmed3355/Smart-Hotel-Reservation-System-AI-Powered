@@ -54,6 +54,10 @@ jobs:
         run: |
           ruff check backend alembic
 
+      - name: MyPy
+        run: |
+          mypy
+
       - name: Pytest
         run: |
           pytest backend/tests -q

@@ -6,3 +6,5 @@ ruff
 jupyter
 
 pip-audit
+
+mypy

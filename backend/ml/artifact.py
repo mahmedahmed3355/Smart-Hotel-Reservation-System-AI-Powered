@@ -11,7 +11,7 @@ class ModelArtifactError(RuntimeError):
 
 
 def resolve_model_path() -> Path:
-    configured = Path(MODEL_PATH)
+    configured = Path(MODEL_PATH or "models/smart_hotel_model.pkl")
 
     if configured.is_absolute():
         path = configured

@@ -21,7 +21,7 @@ def build_database_url(require_password: bool = True) -> str:
     password = DB_PASSWORD or ''
 
     return (
-        f'postgresql+psycopg2://{quote_plus(DB_USER)}:{quote_plus(password)}'
+        f'postgresql+psycopg2://{quote_plus(DB_USER or "")}:{quote_plus(password)}'
         f'@{DB_HOST}:{DB_PORT}/{DB_NAME}'
     )
 
