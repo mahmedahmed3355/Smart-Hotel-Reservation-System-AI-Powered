@@ -1,140 +1,312 @@
-# 🏨 Smart Hotel Reservation System – AI Powered
+# Smart Hotel Reservation System – AI Powered
 
-## 📌 Overview
+## Overview
 
-The Smart Hotel Reservation System is an end-to-end AI-driven booking platform that combines:
+Smart Hotel Reservation System is a FastAPI-based hotel booking application with:
 
-Hotel Reservation Management
+- PostgreSQL-backed booking persistence
+- Alembic database migrations
+- Machine learning-based booking scoring
+- OCR-based identity data extraction
+- Google Cloud Storage integration for uploaded identity images
+- Email booking agent support
+- Docker and Docker Compose deployment
+- Reproducible Python dependencies
+- Automated linting, testing, coverage, dependency, and Docker validation in CI
 
-Machine Learning-based Fraud Detection (LightGBM + Random Forest)
+## Project Requirements
 
-User Identity Verification with OCR & Document Scanning
+The supported development environment uses:
 
-Intelligent AI Agent for customer support (chatbot + email agent)
+- Python 3.12
+- Docker and Docker Compose for containerized execution
+- PostgreSQL when running the application locally or with Compose
 
-Automation with Docker, Jenkins, and Apache Airflow
+## Fresh Clone Setup
 
-This project simulates a real-world hotel booking SaaS where customers can book rooms, upload identity documents, and interact with an AI assistant. The backend ensures fraud prevention, automation, and seamless user experience.
+Clone the repository and enter the project directory:
 
-⚡ Features
-🔹 Backend (FastAPI + PostgreSQL)
+~~~bash
+git clone <repository-url>
+cd Smart-Hotel-Reservation-System-AI-Powered
+~~~
 
-REST API endpoints for hotel bookings & user authentication
+Create and activate a virtual environment:
 
-Integration with PostgreSQL for booking & user data
+~~~bash
+python3.12 -m venv .venv
+source .venv/bin/activate
+~~~
 
-Fraud detection pipeline powered by LightGBM and Random Forest models
+Install the locked dependencies:
 
-Document OCR using Tesseract to extract details from uploaded IDs
+~~~bash
+python -m pip install --upgrade pip
+python -m pip install pip-tools==7.6.1
+python -m pip sync requirements.txt requirements-dev.txt
+~~~
 
-🔹 Machine Learning & AI
+Verify the installed environment:
 
-Fraud Detection ML Pipeline
+~~~bash
+python -m pip check
+~~~
 
-Predicts whether a booking is fraudulent or valid
+## Dependency Management
 
-Models: LightGBM + Random Forest with feature engineering
+Runtime dependencies are declared in:
 
-## AI Agent System
+- `requirements.in`
 
-Email Agent → Sends verification & confirmation emails to users
+Development dependencies are declared in:
 
-Fraud Detection Agent → Flags suspicious users
+- `requirements-dev.in`
 
-Chatbot Agent → Recommends offers & deals to VIP customers
+The locked dependency files are:
 
-## 🔹 Frontend (React + Tailwind)
+- `requirements.txt`
+- `requirements-dev.txt`
 
-Booking form with data entry + document upload
+To regenerate the lock files:
 
-Real-time feedback on booking validation
+~~~bash
+python -m piptools compile requirements.in
+python -m piptools compile requirements-dev.in
+~~~
 
-Interactive dashboard for booking status and recommendations
+To verify that the dependency declarations are reproducible without modifying the lock files:
 
-## 🔹 Automation & Deployment
+~~~bash
+python -m piptools compile --dry-run requirements.in
+python -m piptools compile --dry-run requirements-dev.in
+~~~
 
-Dockerized microservices (Backend, Frontend, Database, OCR Service)
+## Environment Configuration
 
-CI/CD with Jenkins for automated testing & deployment
+Create the local environment file:
 
-Apache Airflow pipelines for ML model training, retraining, and monitoring
+~~~bash
+cp .env.example .env
+~~~
 
-## 🛠️ Tech Stack
+Review `.env.example` and provide appropriate values for your local environment.
 
-Backend: FastAPI, Python, psycopg2
+The application database configuration is controlled through environment variables.
 
-Frontend: React, TailwindCSS
+## Database Setup
 
-Database: PostgreSQL + Cloud Storage (Google Cloud for images)
+The project uses Alembic for schema migrations.
 
-Machine Learning: scikit-learn, LightGBM, pickle
+Configure the database environment variables, then run:
 
-OCR: Tesseract, Pillow
+~~~bash
+alembic upgrade head
+~~~
 
-AI Agents: LangChain / AutoGen (for chatbot & email workflow)
+To verify the current migration state:
 
-## DevOps: Docker, Jenkins, Apache Airflow
+~~~bash
+alembic current
+~~~
 
-📂 Project Structure
-``` bash
-hotel_booking_pipeline/
-│── backend/
-│ ├── app/
-│ │ ├── main.py # FastAPI entrypoint
-│ │ ├── api.py # Endpoints
-│ │ ├── ml_pipeline.py # Fraud detection ML pipeline
-│ │ ├── ocr_service.py # OCR extraction module
-│ │ ├── email_agent.py # Email automation
-│ │ └── chatbot_agent.py # AI chatbot
-│ ├── models/
-│ │ ├── lightgbm_model.pkl
-│ │ └── random_forest.pkl
-│ ├── scripts/
-│ │ ├── retrain_model.py # Airflow retraining script
-│ │ └── docker_build.sh
-│ └── tests/
-│
-│── frontend/
-│ ├── src/
-│ │ ├── App.jsx
-│ │ ├── components/BookForm.jsx
-│ │ ├── components/OCRUpload.jsx
-│ │ └── components/Chatbot.jsx
-│ └── public/
-│
-│── docker-compose.yml
-│── airflow_dags/
-│ └── model_retrain_dag.py
-│── README.md
+To generate SQL without connecting to the database:
 
-🚀 Quick Start
-1️⃣ Backend (FastAPI)
+~~~bash
+alembic upgrade head --sql
+~~~
+
+## Running the Application Locally
+
+From the project root:
+
+~~~bash
+source .venv/bin/activate
 cd backend
-pip install -r requirements.txt
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+uvicorn app.main:app --host 0.0.0.0 --port 8000
+~~~
 
-2️⃣ Frontend (React)
-cd frontend
-npm install
-npm start
+The API will be available at:
 
-3️⃣ Dockerized Setup
-docker-compose up --build
+~~~text
+http://localhost:8000
+~~~
 
-4️⃣ Airflow (Model Retraining)
-airflow dags trigger model_retrain_dag
+Interactive API documentation:
 
-🔮 Future Enhancements
+~~~text
+http://localhost:8000/docs
+~~~
 
-Add multi-language support in chatbot
+## Running Tests
 
-Integrate Stripe/PayPal payment system
+Run the complete backend test suite:
 
-Improve fraud detection using Deep Learning models
+~~~bash
+pytest backend/tests -q
+~~~
 
-Deploy to Kubernetes cluster on GCP/AWS
+Run the service tests only:
 
-📧 Contact
+~~~bash
+pytest backend/tests/test_ocr_service.py \
+       backend/tests/test_gcs_service.py \
+       -q
+~~~
 
-For inquiries or collaboration:
-📩 engmohamedelshrbeny@gmail.com
+Run the API tests:
+
+~~~bash
+pytest backend/tests/test_booking_api.py -q
+~~~
+
+## Linting
+
+Run Ruff across the backend and Alembic configuration:
+
+~~~bash
+ruff check backend alembic
+~~~
+
+Apply supported automatic fixes:
+
+~~~bash
+ruff check backend alembic --fix
+~~~
+
+## Coverage
+
+The CI coverage command can also be run locally:
+
+~~~bash
+pytest backend/tests \
+  --cov=ml \
+  --cov=app.inference \
+  --cov-report=term-missing \
+  --cov-fail-under=85 \
+  -q
+~~~
+
+## Docker Compose
+
+Validate the Docker Compose configuration:
+
+~~~bash
+docker compose --env-file .env.example config --quiet
+~~~
+
+Build and start the services:
+
+~~~bash
+docker compose --env-file .env.example up --build
+~~~
+
+Run the services in detached mode:
+
+~~~bash
+docker compose --env-file .env.example up --build -d
+~~~
+
+Stop the services:
+
+~~~bash
+docker compose down
+~~~
+
+The API service waits for the PostgreSQL health check before starting.
+
+## Docker API Image
+
+Build the API image:
+
+~~~bash
+docker compose --env-file .env.example build api
+~~~
+
+Start only the API service and its dependencies:
+
+~~~bash
+docker compose --env-file .env.example up api
+~~~
+
+The API container runs Alembic migrations before starting Uvicorn.
+
+## CI
+
+GitHub Actions validates:
+
+- Dependency installation using the locked dependency files
+- Dependency consistency with `pip check`
+- Reproducibility of dependency declarations
+- Ruff linting
+- Backend tests
+- Coverage requirements
+- Docker Compose configuration
+- API Docker image builds
+- Basic repository secret detection
+- Generated artifact hygiene
+
+## Project Structure
+
+~~~text
+.
+├── alembic/
+│   ├── env.py
+│   └── versions/
+├── backend/
+│   ├── agents/
+│   │   └── email_agent.py
+│   ├── app/
+│   │   ├── api.py
+│   │   ├── database.py
+│   │   ├── inference.py
+│   │   ├── main.py
+│   │   ├── models.py
+│   │   └── schemas.py
+│   ├── database/
+│   │   └── legacy_hotel_bookings.sql
+│   ├── ml/
+│   ├── services/
+│   │   ├── gcs.py
+│   │   └── ocr.py
+│   └── tests/
+├── .github/
+│   └── workflows/
+│       └── ci.yml
+├── alembic.ini
+├── Dockerfile.api
+├── docker-compose.yml
+├── requirements.in
+├── requirements.txt
+├── requirements-dev.in
+└── requirements-dev.txt
+~~~
+
+## Repository Hygiene
+
+Do not commit:
+
+- `.env` files containing credentials
+- Local database files
+- Generated coverage artifacts
+- Local machine-learning model artifacts
+- Private keys or cloud credentials
+
+Use `.env.example` as the template for required configuration.
+
+## Verification Checklist
+
+For a fresh clone, the following commands should complete successfully after dependency installation and environment configuration:
+
+~~~bash
+python -m pip check
+ruff check backend alembic
+pytest backend/tests -q
+pytest backend/tests \
+  --cov=ml \
+  --cov=app.inference \
+  --cov-report=term-missing \
+  --cov-fail-under=85 \
+  -q
+docker compose --env-file .env.example config --quiet
+docker compose --env-file .env.example build api
+~~~
