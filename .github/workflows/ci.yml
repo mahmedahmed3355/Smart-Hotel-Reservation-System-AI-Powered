@@ -45,7 +45,9 @@ jobs:
 
       - name: Build test model artifact
         run: |
-          python -c "import sys; sys.path.insert(0, 'backend'); from ml.training import train_and_save; train_and_save('backend/tests/fixtures/hotel_reservations_sample.csv', 'models/smart_hotel_model.pkl')"
+          PYTHONPATH=backend python -m ml \
+            --dataset backend/tests/fixtures/hotel_reservations_sample.csv \
+            --output models/smart_hotel_model.pkl
 
       - name: Ruff
         run: |
