@@ -9,6 +9,30 @@ description = "AI-powered hotel reservation system with FastAPI, ML, OCR, and co
 readme = "README.md"
 requires-python = ">=3.12"
 license = "MIT"
+dependencies = [
+    "pandas",
+    "numpy",
+    "scikit-learn",
+    "sqlalchemy",
+    "psycopg2-binary",
+    "fastapi",
+    "uvicorn",
+    "alembic",
+    "lightgbm",
+    "google-cloud-storage",
+    "Pillow",
+    "python-multipart",
+    "pytesseract",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-cov",
+    "httpx",
+    "ruff",
+    "jupyter",
+]
 
 [tool.setuptools]
 package-dir = {"" = "backend"}
