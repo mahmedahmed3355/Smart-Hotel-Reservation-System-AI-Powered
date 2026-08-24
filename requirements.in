@@ -1,0 +1,12 @@
+pandas
+numpy
+scikit-learn
+sqlalchemy
+psycopg2-binary
+fastapi
+uvicorn
+alembic
+lightgbm
+google-cloud-storage
+Pillow
+python-multipart
