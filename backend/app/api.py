@@ -7,8 +7,6 @@ import uuid
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
-from services.gcs import upload_to_gcs
-from services.ocr import extract_from_id
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -16,6 +14,8 @@ from app.discounts import compute_discounts
 from app.inference import predict_score
 from app.models import Booking
 from app.schemas import BookingCreate
+from services.gcs import upload_to_gcs
+from services.ocr import extract_from_id
 
 router = APIRouter(prefix="/bookings", tags=["bookings"])
 

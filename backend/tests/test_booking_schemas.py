@@ -1,7 +1,8 @@
 import pytest
+from pydantic import ValidationError
+
 from app.schemas import BookingCreate
 from ml.schema import FEATURES
-from pydantic import ValidationError
 
 
 def booking_payload(**overrides):

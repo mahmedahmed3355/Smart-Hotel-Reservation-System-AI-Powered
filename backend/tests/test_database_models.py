@@ -1,7 +1,8 @@
 import pytest
+from sqlalchemy.dialects.postgresql import JSONB
+
 from app import database
 from app.models import Booking
-from sqlalchemy.dialects.postgresql import JSONB
 
 
 def test_build_database_url_uses_configured_values(monkeypatch):

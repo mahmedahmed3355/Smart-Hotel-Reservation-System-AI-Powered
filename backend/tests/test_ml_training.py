@@ -1,5 +1,7 @@
 import pandas as pd
 import pytest
+from sklearn.pipeline import Pipeline
+
 from ml.training import (
     build_model,
     load_dataset,
@@ -7,7 +9,6 @@ from ml.training import (
     train_and_save,
     train_model,
 )
-from sklearn.pipeline import Pipeline
 
 
 def test_load_dataset_contract():

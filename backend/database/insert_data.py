@@ -1,6 +1,8 @@
 from pathlib import Path
 
 import pandas as pd
+from sqlalchemy import create_engine
+
 from config.settings import (
     DATA_CSV,
     DB_HOST,
@@ -9,7 +11,6 @@ from config.settings import (
     DB_PORT,
     DB_USER,
 )
-from sqlalchemy import create_engine
 
 if not DB_PASSWORD:
     raise RuntimeError(

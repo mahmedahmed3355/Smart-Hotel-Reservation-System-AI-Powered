@@ -2,6 +2,7 @@
 import pickle
 
 import pandas as pd
+
 from config import MODEL_PATH
 
 # تحميل النموذج مرة واحدة

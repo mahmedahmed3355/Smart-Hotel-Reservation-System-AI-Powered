@@ -1,5 +1,8 @@
 from urllib.parse import quote_plus
 
+from sqlalchemy import create_engine
+from sqlalchemy.orm import declarative_base, sessionmaker
+
 from config.settings import (
     DB_HOST,
     DB_NAME,
@@ -7,8 +10,6 @@ from config.settings import (
     DB_PORT,
     DB_USER,
 )
-from sqlalchemy import create_engine
-from sqlalchemy.orm import declarative_base, sessionmaker
 
 
 def build_database_url(require_password: bool = True) -> str:

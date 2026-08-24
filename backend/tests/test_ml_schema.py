@@ -1,5 +1,6 @@
 import pandas as pd
 import pytest
+
 from ml.preprocessing import prepare_features
 from ml.schema import (
     CATEGORICAL_FEATURES,

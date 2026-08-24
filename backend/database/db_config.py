@@ -1,3 +1,5 @@
+from sqlalchemy import create_engine
+
 from config.settings import (
     DB_HOST,
     DB_NAME,
@@ -5,7 +7,6 @@ from config.settings import (
     DB_PORT,
     DB_USER,
 )
-from sqlalchemy import create_engine
 
 if not DB_PASSWORD:
     raise RuntimeError(

@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any
 
 import pandas as pd
+
 from ml.artifact import load_artifact
 from ml.preprocessing import prepare_features
 

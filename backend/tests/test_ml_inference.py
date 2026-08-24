@@ -1,5 +1,6 @@
 import pandas as pd
 import pytest
+
 from app.inference import predict_score
 from ml.schema import FEATURES
 

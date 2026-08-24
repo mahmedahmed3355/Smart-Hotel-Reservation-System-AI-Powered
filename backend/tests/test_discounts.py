@@ -1,4 +1,5 @@
 import pytest
+
 from app.discounts import compute_discounts
 
 

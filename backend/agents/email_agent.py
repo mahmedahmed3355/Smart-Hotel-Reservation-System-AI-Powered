@@ -7,8 +7,9 @@ import smtplib
 from email.message import EmailMessage
 
 import requests
-from app.schemas import BookingCreate
 from pydantic import ValidationError
+
+from app.schemas import BookingCreate
 
 logger = logging.getLogger(__name__)
 
